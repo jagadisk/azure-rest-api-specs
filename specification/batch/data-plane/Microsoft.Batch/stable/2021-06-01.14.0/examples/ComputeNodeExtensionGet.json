@@ -22,7 +22,7 @@
             }
           ]
         },
-        "vMExtension": {
+        "vmExtension": {
           "name": "batchNodeExtension",
           "publisher": "Microsoft.Azure.Extensions",
           "type": "CustomScript",
