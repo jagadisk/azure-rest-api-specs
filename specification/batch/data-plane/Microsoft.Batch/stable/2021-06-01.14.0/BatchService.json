@@ -14119,7 +14119,18 @@
           ],
           "x-ms-enum": {
             "name": "StatusLevelTypes",
-            "modelAsString": false
+            "modelAsString": false,
+            "values": [
+              {
+                "value": "error"
+              },
+              {
+                "value": "info"
+              },
+              {
+                "value": "warning"
+              }
+            ]
           }
         },
         "message": {

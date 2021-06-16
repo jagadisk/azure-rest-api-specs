@@ -16,7 +16,7 @@
           "statuses": [
             {
               "code": "ProvisioningState/succeeded",
-              "level": 0,
+              "level": "Info",
               "displayStatus": "Provisioning succeeded",
               "message": "Enable succeeded: Enabling and starting agent and controller"
             }
