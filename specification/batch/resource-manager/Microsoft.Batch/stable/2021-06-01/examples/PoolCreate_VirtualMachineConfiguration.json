@@ -44,10 +44,8 @@
             "nodePlacementConfiguration": {
               "policy": "Zonal"
             },
-            "osDisk":
-            {
-              "ephemeralOSDiskSettings":
-              {
+            "osDisk": {
+              "ephemeralOSDiskSettings": {
                 "placement": "CacheDisk"
               }
             }
