@@ -1621,6 +1621,80 @@
         }
       }
     },
+    "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Batch/batchAccounts/{accountName}/detectors": {
+      "get": {
+        "operationId": "BatchAccount_ListDetectors",
+        "description": "Gets information about the detectors available for a given Batch account.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ResourceGroupNameParameter"
+          },
+          {
+            "$ref": "#/parameters/ApiVersionParameter"
+          },
+          {
+            "$ref": "#/parameters/SubscriptionIdParameter"
+          },
+          {
+            "$ref": "#/parameters/AccountNameParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The operation was successful. The response contains a list of detectors associated with a Batch account.",
+            "schema": {
+              "$ref": "#/definitions/DetectorListResult"
+            }
+          },
+          "default": {
+            "description": "Error response describing why the operation failed.",
+            "schema": {
+              "$ref": "#/definitions/CloudError"
+            }
+          }
+        },
+        "x-ms-pageable": {
+          "nextLinkName": "nextLink"
+        }
+      }
+    },
+    "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Batch/batchAccounts/{accountName}/detectors/{detectorId}": {
+      "get": {
+        "operationId": "BatchAccount_GetDetector",
+        "description": "Gets information about the given detector for a given Batch account.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ResourceGroupNameParameter"
+          },
+          {
+            "$ref": "#/parameters/ApiVersionParameter"
+          },
+          {
+            "$ref": "#/parameters/SubscriptionIdParameter"
+          },
+          {
+            "$ref": "#/parameters/AccountNameParameter"
+          },
+          {
+            "$ref": "#/parameters/DetectorNameParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The operation was successful. The response contains information about the given detector associated with a Batch account.",
+            "schema": {
+              "$ref": "#/definitions/DetectorResponse"
+            }
+          },
+          "default": {
+            "description": "Error response describing why the operation failed.",
+            "schema": {
+              "$ref": "#/definitions/CloudError"
+            }
+          }
+        }
+      }
+    },
     "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Batch/batchAccounts/{accountName}/privateLinkResources": {
       "get": {
         "tags": [
@@ -3440,6 +3514,46 @@
         "message"
       ],
       "description": "An error response from the Batch service."
+    },
+    "DetectorListResult": {
+      "properties": {
+        "value": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetectorResponse"
+          },
+          "description": "The collection of Batch account detectors returned by the listing operation."
+        },
+        "nextLink": {
+          "type": "string",
+          "description": "The URL to get the next set of results."
+        }
+      },
+      "description": "Values returned by the List operation."
+    },
+    "DetectorResponse": {
+      "properties": {
+        "properties": {
+          "x-ms-client-flatten": true,
+          "$ref": "#/definitions/DetectorResponseProperties",
+          "description": "The properties associated with the detector."
+        }
+      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/ProxyResource"
+        }
+      ],
+      "description": "Contains the information for a detector."
+    },
+    "DetectorResponseProperties": {
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "A base64 encoded string that represents the content of a detector."
+        }
+      },
+      "description": "Detector response properties."
     },
     "PrivateLinkResource": {
       "type": "object",
@@ -5770,6 +5884,14 @@
       "minLength": 5,
       "maxLength": 45,
       "description": "The identifier for the certificate. This must be made up of algorithm and thumbprint separated by a dash, and must match the certificate data in the request. For example SHA1-a3d1c5.",
+      "x-ms-parameter-location": "method"
+    },
+    "DetectorNameParameter": {
+      "name": "accountName",
+      "in": "path",
+      "required": true,
+      "type": "string",
+      "description": "The name of the detector.",
       "x-ms-parameter-location": "method"
     },
     "PoolNameParameter": {
