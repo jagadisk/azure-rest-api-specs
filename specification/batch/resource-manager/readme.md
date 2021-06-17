@@ -1,6 +1,6 @@
 # Batch
 
-> see https://aka.ms/autorest
+> see <https://aka.ms/autorest>
 
 This is the AutoRest configuration file for Batch.
 
@@ -26,7 +26,16 @@ These are the global settings for the Batch API.
 
 ``` yaml
 openapi-type: arm
-tag: package-2021-01
+tag: package-2021-06
+```
+
+### Tag: package-2021-06
+
+These settings apply only when `--tag=package-2021-06` is specified on the command line.
+
+```yaml $(tag) == 'package-2021-06'
+input-file:
+  - Microsoft.Batch/stable/2021-06-01/BatchManagement.json
 ```
 
 ### Tag: package-2021-01
@@ -167,7 +176,7 @@ input-file:
 
 ---
 
-# Code Generation
+## Code Generation
 
 ## Swagger to SDK
 
@@ -189,7 +198,7 @@ swagger-to-sdk:
   - repo: azure-resource-manager-schemas
 ```
 
-## C#
+## C\#
 
 These settings apply only when `--csharp` is specified on the command line.
 Please also specify `--csharp-sdks-folder=<path to "SDKs" directory of your azure-sdk-for-net clone>`.
@@ -286,6 +295,3 @@ generate-interface: true
 ```
 
 `
-
-
-

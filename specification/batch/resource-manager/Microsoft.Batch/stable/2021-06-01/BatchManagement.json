@@ -2,10 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "BatchManagement",
-    "version": "2021-01-01",
-    "x-ms-code-generation-settings": {
-      "name": "BatchManagementClient"
-    }
+    "version": "2021-06-01"
   },
   "host": "management.azure.com",
   "schemes": [
@@ -405,7 +402,8 @@
             "$ref": "./examples/BatchAccountRegenerateKey.json"
           }
         },
-        "description": "Regenerates the specified account key for the Batch account.",
+        "summary": "Regenerates the specified account key for the Batch account.",
+        "description": "This operation applies only to Batch accounts with allowedAuthenticationModes containing 'SharedKey'. If the Batch account doesn't contain 'SharedKey' in its allowedAuthenticationMode, clients cannot use shared keys to authenticate, and must use another allowedAuthenticationModes instead. In this case, regenerating the keys will fail.",
         "parameters": [
           {
             "$ref": "#/parameters/ResourceGroupNameParameter"
@@ -457,7 +455,7 @@
           }
         },
         "summary": "Gets the account keys for the specified Batch account.",
-        "description": "This operation applies only to Batch accounts created with a poolAllocationMode of 'BatchService'. If the Batch account was created with a poolAllocationMode of 'UserSubscription', clients cannot use access to keys to authenticate, and must use Azure Active Directory instead. In this case, getting the keys will fail.",
+        "description": "This operation applies only to Batch accounts with allowedAuthenticationModes containing 'SharedKey'. If the Batch account doesn't contain 'SharedKey' in its allowedAuthenticationMode, clients cannot use shared keys to authenticate, and must use another allowedAuthenticationModes instead. In this case, getting the keys will fail.",
         "parameters": [
           {
             "$ref": "#/parameters/ResourceGroupNameParameter"
@@ -946,7 +944,7 @@
         ],
         "operationId": "ApplicationPackage_List",
         "x-ms-examples": {
-          "ApplicationList": {
+          "ApplicationPackageList": {
             "$ref": "./examples/ApplicationPackageList.json"
           }
         },
@@ -1035,6 +1033,128 @@
               "$ref": "#/definitions/CloudError"
             }
           }
+        }
+      }
+    },
+    "/subscriptions/{subscriptionId}/providers/Microsoft.Batch/locations/{locationName}/virtualMachineSkus": {
+      "get": {
+        "tags": [
+          "Location"
+        ],
+        "operationId": "Location_ListSupportedVirtualMachineSkus",
+        "x-ms-examples": {
+          "LocationListVirtualMachineSkus": {
+            "$ref": "./examples/LocationListVirtualMachineSkus.json"
+          }
+        },
+        "description": "Gets the list of Batch supported Virtual Machine VM sizes available at the given location.",
+        "parameters": [
+          {
+            "name": "locationName",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The region for which to retrieve Batch service supported SKUs."
+          },
+          {
+            "name": "maxresults",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "description": "The maximum number of items to return in the response."
+          },
+          {
+            "name": "$filter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "OData filter expression. Valid properties for filtering are \"familyName\"."
+          },
+          {
+            "$ref": "#/parameters/ApiVersionParameter"
+          },
+          {
+            "$ref": "#/parameters/SubscriptionIdParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The operation was successful. The response contains the Batch service supported virtual machine vm sizes for the subscription in the specified location.",
+            "schema": {
+              "$ref": "#/definitions/SupportedSkusResult"
+            }
+          },
+          "default": {
+            "description": "Error response describing why the operation failed.",
+            "schema": {
+              "$ref": "#/definitions/CloudError"
+            }
+          }
+        },
+        "x-ms-pageable": {
+          "nextLinkName": "nextLink"
+        }
+      }
+    },
+    "/subscriptions/{subscriptionId}/providers/Microsoft.Batch/locations/{locationName}/cloudServiceSkus": {
+      "get": {
+        "tags": [
+          "Location"
+        ],
+        "operationId": "Location_ListSupportedCloudServiceSkus",
+        "x-ms-examples": {
+          "LocationListCloudServiceSkus": {
+            "$ref": "./examples/LocationListCloudServiceSkus.json"
+          }
+        },
+        "description": "Gets the list of Batch supported Cloud Service VM sizes available at the given location.",
+        "parameters": [
+          {
+            "name": "locationName",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The region for which to retrieve Batch service supported SKUs."
+          },
+          {
+            "name": "maxresults",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "description": "The maximum number of items to return in the response."
+          },
+          {
+            "name": "$filter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "OData filter expression. Valid properties for filtering are \"familyName\"."
+          },
+          {
+            "$ref": "#/parameters/ApiVersionParameter"
+          },
+          {
+            "$ref": "#/parameters/SubscriptionIdParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The operation was successful. The response contains the Batch service supported Cloud Service VM sizes for the subscription in the specified location.",
+            "schema": {
+              "$ref": "#/definitions/SupportedSkusResult"
+            }
+          },
+          "default": {
+            "description": "Error response describing why the operation failed.",
+            "schema": {
+              "$ref": "#/definitions/CloudError"
+            }
+          }
+        },
+        "x-ms-pageable": {
+          "nextLinkName": "nextLink"
         }
       }
     },
@@ -2234,10 +2354,56 @@
           }
         }
       }
+    },
+    "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Batch/batchAccounts/{accountName}/outboundNetworkDependenciesEndpoints": {
+      "get": {
+        "tags": [
+          "BatchAccount"
+        ],
+        "operationId": "BatchAccount_ListOutboundNetworkDependenciesEndpoints",
+        "description": "Lists the endpoints that a Batch Compute Node under this Batch Account may call as part of Batch service administration. If you are deploying a Pool inside of a virtual network that you specify, you must make sure your network allows outbound access to these endpoints. Failure to allow access to these endpoints may cause Batch to mark the affected nodes as unusable. For more information about creating a pool inside of a virtual network, see https://docs.microsoft.com/en-us/azure/batch/batch-virtual-network.",
+        "x-ms-examples": {
+          "ListOutboundNetworkDependencies": {
+            "$ref": "./examples/BatchAccountListOutboundNetworkDependenciesEndpoints.json"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/parameters/ResourceGroupNameParameter"
+          },
+          {
+            "$ref": "#/parameters/AccountNameParameter"
+          },
+          {
+            "$ref": "#/parameters/ApiVersionParameter"
+          },
+          {
+            "$ref": "#/parameters/SubscriptionIdParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The operation was successful. The response contains a list of outbound network dependencies.",
+            "schema": {
+              "$ref": "#/definitions/OutboundEnvironmentEndpointCollection"
+            }
+          },
+          "default": {
+            "description": "Error response describing why the operation failed.",
+            "schema": {
+              "$ref": "#/definitions/CloudError"
+            }
+          }
+        },
+        "x-ms-pageable": {
+          "nextLinkName": "nextLink"
+        }
+      }
     }
   },
   "definitions": {
     "AutoStorageBaseProperties": {
+      "type": "object",
       "properties": {
         "storageAccountId": {
           "type": "string",
@@ -2250,6 +2416,7 @@
       "description": "The properties related to the auto-storage account."
     },
     "BatchAccountUpdateProperties": {
+      "type": "object",
       "properties": {
         "autoStorage": {
           "$ref": "#/definitions/AutoStorageBaseProperties",
@@ -2259,11 +2426,20 @@
           "title": "The encryption configuration for the Batch account.",
           "description": "Configures how customer data is encrypted inside the Batch account. By default, accounts are encrypted using a Microsoft managed key. For additional control, a customer-managed key can be used instead.",
           "$ref": "#/definitions/EncryptionProperties"
+        },
+        "allowedAuthenticationModes": {
+          "x-nullable": true,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AuthenticationMode"
+          },
+          "description": "List of allowed authentication modes for the Batch account that can be used to authenticate with the data plane. This does not affect authentication with the control plane."
         }
       },
       "description": "The properties of a Batch account."
     },
     "BatchAccountCreateProperties": {
+      "type": "object",
       "properties": {
         "autoStorage": {
           "$ref": "#/definitions/AutoStorageBaseProperties",
@@ -2287,11 +2463,47 @@
           "title": "The encryption configuration for the Batch account.",
           "description": "Configures how customer data is encrypted inside the Batch account. By default, accounts are encrypted using a Microsoft managed key. For additional control, a customer-managed key can be used instead.",
           "$ref": "#/definitions/EncryptionProperties"
+        },
+        "allowedAuthenticationModes": {
+          "x-nullable": true,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AuthenticationMode"
+          },
+          "description": "List of allowed authentication modes for the Batch account that can be used to authenticate with the data plane. This does not affect authentication with the control plane."
         }
       },
       "description": "The properties of a Batch account."
     },
+    "AuthenticationMode": {
+      "type": "string",
+      "description": "The authentication mode for the Batch account.",
+      "enum": [
+        "SharedKey",
+        "AAD",
+        "TaskAuthenticationToken"
+      ],
+      "x-ms-enum": {
+        "name": "AuthenticationMode",
+        "modelAsString": false,
+        "values": [
+          {
+            "value": "SharedKey",
+            "description": "The authentication mode using shared keys."
+          },
+          {
+            "value": "AAD",
+            "description": "The authentication mode using Azure Active Directory."
+          },
+          {
+            "value": "TaskAuthenticationToken",
+            "description": "The authentication mode using task authentication tokens."
+          }
+        ]
+      }
+    },
     "BatchAccountCreateParameters": {
+      "type": "object",
       "properties": {
         "location": {
           "type": "string",
@@ -2320,6 +2532,7 @@
       "description": "Parameters supplied to the Create operation."
     },
     "KeyVaultReference": {
+      "type": "object",
       "properties": {
         "id": {
           "type": "string",
@@ -2337,6 +2550,7 @@
       "description": "Identifies the Azure key vault associated with a Batch account."
     },
     "AutoStorageProperties": {
+      "type": "object",
       "properties": {
         "lastKeySync": {
           "type": "string",
@@ -2355,6 +2569,7 @@
       "description": "Contains information about the auto-storage account associated with a Batch account."
     },
     "VirtualMachineFamilyCoreQuota": {
+      "type": "object",
       "properties": {
         "name": {
           "readOnly": true,
@@ -2373,6 +2588,7 @@
       "description": "A VM Family and its associated core quota for the Batch account."
     },
     "BatchAccountIdentity": {
+      "type": "object",
       "properties": {
         "principalId": {
           "readOnly": true,
@@ -2413,22 +2629,10 @@
         },
         "userAssignedIdentities": {
           "type": "object",
+          "description": "The list of user identities associated with the Batch account.",
           "additionalProperties": {
-            "type": "object",
-            "properties": {
-              "principalId": {
-                "readOnly": true,
-                "type": "string",
-                "description": "The principal id of user assigned identity."
-              },
-              "clientId": {
-                "readOnly": true,
-                "type": "string",
-                "description": "The client id of user assigned identity."
-              }
-            }
-          },
-          "description": "The list of user identities associated with the Batch account. The user identity dictionary key references will be ARM resource ids in the form: '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}'."
+            "$ref": "#/definitions/UserAssignedIdentities"
+          }
         }
       },
       "description": "The identity of the Batch account, if configured. This is only used when the user specifies 'Microsoft.KeyVault' as their Batch account encryption configuration.",
@@ -2437,6 +2641,7 @@
       ]
     },
     "BatchAccountProperties": {
+      "type": "object",
       "properties": {
         "accountEndpoint": {
           "type": "string",
@@ -2533,12 +2738,12 @@
           "title": "The dedicated core quota for the Batch account.",
           "description": "For accounts with PoolAllocationMode set to UserSubscription, quota is managed on the subscription so this value is not returned."
         },
-        "lowPriorityCoreQuota": {
+        "spotCoreQuota": {
           "readOnly": true,
           "x-nullable": true,
           "type": "integer",
           "format": "int32",
-          "title": "The low priority core quota for the Batch account.",
+          "title": "The spot core quota for the Batch account.",
           "description": "For accounts with PoolAllocationMode set to UserSubscription, quota is managed on the subscription so this value is not returned."
         },
         "dedicatedCoreQuotaPerVMFamily": {
@@ -2570,11 +2775,21 @@
           "type": "integer",
           "format": "int32",
           "title": "The active job and job schedule quota for the Batch account."
+        },
+        "allowedAuthenticationModes": {
+          "readOnly": true,
+          "x-nullable": false,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AuthenticationMode"
+          },
+          "description": "List of allowed authentication modes for the Batch account that can be used to authenticate with the data plane. This does not affect authentication with the control plane."
         }
       },
       "description": "Account specific properties."
     },
     "BatchAccount": {
+      "type": "object",
       "properties": {
         "properties": {
           "x-ms-client-flatten": true,
@@ -2594,6 +2809,7 @@
       "description": "Contains information about an Azure Batch account."
     },
     "BatchAccountUpdateParameters": {
+      "type": "object",
       "properties": {
         "tags": {
           "type": "object",
@@ -2615,6 +2831,7 @@
       "description": "Parameters for updating an Azure Batch account."
     },
     "BatchAccountListResult": {
+      "type": "object",
       "properties": {
         "value": {
           "type": "array",
@@ -2631,6 +2848,7 @@
       "description": "Values returned by the List operation."
     },
     "EncryptionProperties": {
+      "type": "object",
       "properties": {
         "keySource": {
           "type": "string",
@@ -2662,6 +2880,7 @@
       "description": "Configures how customer data is encrypted inside the Batch account. By default, accounts are encrypted using a Microsoft managed key. For additional control, a customer-managed key can be used instead."
     },
     "KeyVaultProperties": {
+      "type": "object",
       "properties": {
         "keyIdentifier": {
           "type": "string",
@@ -2671,6 +2890,7 @@
       "description": "KeyVault configuration when using an encryption KeySource of Microsoft.KeyVault."
     },
     "BatchAccountRegenerateKeyParameters": {
+      "type": "object",
       "properties": {
         "keyName": {
           "type": "string",
@@ -2701,6 +2921,7 @@
       "description": "Parameters supplied to the RegenerateKey operation."
     },
     "BatchAccountKeys": {
+      "type": "object",
       "properties": {
         "accountName": {
           "type": "string",
@@ -2721,6 +2942,7 @@
       "description": "A set of Azure Batch account keys."
     },
     "ActivateApplicationPackageParameters": {
+      "type": "object",
       "properties": {
         "format": {
           "type": "string",
@@ -2733,6 +2955,7 @@
       "description": "Parameters for an activating an application package."
     },
     "Application": {
+      "type": "object",
       "properties": {
         "properties": {
           "x-ms-client-flatten": true,
@@ -2748,6 +2971,7 @@
       "description": "Contains information about an application in a Batch account."
     },
     "ApplicationProperties": {
+      "type": "object",
       "properties": {
         "displayName": {
           "type": "string",
@@ -2765,6 +2989,7 @@
       "description": "The properties associated with the Application."
     },
     "ApplicationPackage": {
+      "type": "object",
       "properties": {
         "properties": {
           "x-ms-client-flatten": true,
@@ -2780,6 +3005,7 @@
       "description": "An application package which represents a particular version of an application."
     },
     "ApplicationPackageProperties": {
+      "type": "object",
       "properties": {
         "state": {
           "type": "string",
@@ -2830,6 +3056,7 @@
       "description": "Properties of an application package"
     },
     "ListApplicationsResult": {
+      "type": "object",
       "properties": {
         "value": {
           "type": "array",
@@ -2846,6 +3073,7 @@
       "description": "The result of performing list applications."
     },
     "ListApplicationPackagesResult": {
+      "type": "object",
       "properties": {
         "value": {
           "type": "array",
@@ -2862,6 +3090,7 @@
       "description": "The result of performing list application packages."
     },
     "BatchLocationQuota": {
+      "type": "object",
       "properties": {
         "accountQuota": {
           "type": "integer",
@@ -2873,6 +3102,7 @@
       "description": "Quotas associated with a Batch region for a particular subscription."
     },
     "Resource": {
+      "type": "object",
       "properties": {
         "id": {
           "readOnly": true,
@@ -2907,6 +3137,7 @@
       "x-ms-azure-resource": true
     },
     "ProxyResource": {
+      "type": "object",
       "properties": {
         "id": {
           "readOnly": true,
@@ -2978,6 +3209,8 @@
       }
     },
     "CertificateBaseProperties": {
+      "description": "Base certificate properties.",
+      "type": "object",
       "properties": {
         "thumbprintAlgorithm": {
           "type": "string",
@@ -3015,6 +3248,7 @@
       }
     },
     "CertificateProperties": {
+      "type": "object",
       "properties": {
         "provisioningState": {
           "type": "string",
@@ -3106,6 +3340,7 @@
       "description": "Certificate properties."
     },
     "CertificateCreateOrUpdateProperties": {
+      "type": "object",
       "allOf": [
         {
           "$ref": "#/definitions/CertificateBaseProperties"
@@ -3129,6 +3364,7 @@
       ]
     },
     "Certificate": {
+      "type": "object",
       "properties": {
         "properties": {
           "x-ms-client-flatten": true,
@@ -3144,6 +3380,7 @@
       "description": "Contains information about a certificate."
     },
     "CertificateCreateOrUpdateParameters": {
+      "type": "object",
       "properties": {
         "properties": {
           "x-ms-client-flatten": true,
@@ -3159,6 +3396,7 @@
       "description": "Contains information about a certificate."
     },
     "ListCertificatesResult": {
+      "type": "object",
       "properties": {
         "value": {
           "type": "array",
@@ -3175,6 +3413,7 @@
       "description": "Values returned by the List operation."
     },
     "DeleteCertificateError": {
+      "type": "object",
       "properties": {
         "code": {
           "type": "string",
@@ -3203,6 +3442,7 @@
       "description": "An error response from the Batch service."
     },
     "PrivateLinkResource": {
+      "type": "object",
       "properties": {
         "properties": {
           "x-ms-client-flatten": true,
@@ -3218,6 +3458,7 @@
       "description": "Contains information about a private link resource."
     },
     "PrivateLinkResourceProperties": {
+      "type": "object",
       "properties": {
         "groupId": {
           "type": "string",
@@ -3245,6 +3486,7 @@
       "description": "Private link resource properties."
     },
     "PrivateEndpointConnection": {
+      "type": "object",
       "properties": {
         "properties": {
           "x-ms-client-flatten": true,
@@ -3260,6 +3502,7 @@
       "description": "Contains information about a private link resource."
     },
     "PrivateEndpointConnectionProperties": {
+      "type": "object",
       "properties": {
         "provisioningState": {
           "type": "string",
@@ -3302,6 +3545,7 @@
       "description": "Private endpoint connection properties."
     },
     "PrivateEndpoint": {
+      "type": "object",
       "properties": {
         "id": {
           "type": "string",
@@ -3312,6 +3556,7 @@
       "description": "The private endpoint of the private endpoint connection."
     },
     "PrivateLinkServiceConnectionState": {
+      "type": "object",
       "properties": {
         "status": {
           "$ref": "#/definitions/PrivateLinkServiceConnectionStatus",
@@ -3365,6 +3610,7 @@
       }
     },
     "Pool": {
+      "type": "object",
       "properties": {
         "properties": {
           "x-ms-client-flatten": true,
@@ -3385,6 +3631,7 @@
       "description": "Contains information about a pool."
     },
     "PoolProperties": {
+      "type": "object",
       "properties": {
         "displayName": {
           "type": "string",
@@ -3483,10 +3730,10 @@
           "title": "The number of compute nodes currently in the pool.",
           "readOnly": true
         },
-        "currentLowPriorityNodes": {
+        "currentSpotNodes": {
           "type": "integer",
           "format": "int32",
-          "title": "The number of low priority compute nodes currently in the pool.",
+          "title": "The number of spot compute nodes currently in the pool.",
           "readOnly": true
         },
         "scaleSettings": {
@@ -3593,11 +3840,18 @@
           },
           "title": "A list of file systems to mount on each node in the pool.",
           "description": "This supports Azure Files, NFS, CIFS/SMB, and Blobfuse."
+        },
+        "maxSpotPrice": {
+          "type": "number",
+          "format": "double",
+          "title": "The maximum price you are willing to pay per hour for a Spot VM, expressed in US dollars",
+          "description": "This price gets compared against the current Azure Spot price for the Pool's VM size. If the Azure Spot price is higher than the maxSpotPrice, then existing Spot VMs in the Pool will be evicted and new Spot VMs will fail to allocate. There is a special value of -1 which ensures that Spot VMs will never be preempted for price reasons and that Spot VMs will always be billed at the current on-demand price. Applicable only for VirtualMachineConfiguration pools. Default value is -1 if not provided."
         }
       },
       "description": "Pool properties."
     },
     "BatchPoolIdentity": {
+      "type": "object",
       "properties": {
         "type": {
           "type": "string",
@@ -3623,22 +3877,10 @@
         },
         "userAssignedIdentities": {
           "type": "object",
+          "description": "The list of user identities associated with the Batch pool.",
           "additionalProperties": {
-            "type": "object",
-            "properties": {
-              "principalId": {
-                "readOnly": true,
-                "type": "string",
-                "description": "The principal id of user assigned identity."
-              },
-              "clientId": {
-                "readOnly": true,
-                "type": "string",
-                "description": "The client id of user assigned identity."
-              }
-            }
-          },
-          "description": "The list of user identities associated with the Batch pool. The user identity dictionary key references will be ARM resource ids in the form: '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}'."
+            "$ref": "#/definitions/UserAssignedIdentities"
+          }
         }
       },
       "description": "The identity of the Batch pool, if configured. If the pool identity is updated during update an existing pool, only the new vms which are created after the pool shrinks to 0 will have the updated identities",
@@ -3647,6 +3889,7 @@
       ]
     },
     "DeploymentConfiguration": {
+      "type": "object",
       "properties": {
         "cloudServiceConfiguration": {
           "$ref": "#/definitions/CloudServiceConfiguration",
@@ -3662,6 +3905,7 @@
       "title": "Deployment configuration properties."
     },
     "ScaleSettings": {
+      "type": "object",
       "properties": {
         "fixedScale": {
           "$ref": "#/definitions/FixedScaleSettings",
@@ -3678,6 +3922,7 @@
       "description": "Defines the desired size of the pool. This can either be 'fixedScale' where the requested targetDedicatedNodes is specified, or 'autoScale' which defines a formula which is periodically reevaluated. If this property is not specified, the pool will have a fixed scale with 0 targetDedicatedNodes."
     },
     "AutoScaleSettings": {
+      "type": "object",
       "properties": {
         "formula": {
           "type": "string",
@@ -3700,6 +3945,7 @@
       "title": "AutoScale settings for the pool."
     },
     "FixedScaleSettings": {
+      "type": "object",
       "properties": {
         "resizeTimeout": {
           "type": "string",
@@ -3711,13 +3957,13 @@
           "type": "integer",
           "format": "int32",
           "title": "The desired number of dedicated compute nodes in the pool.",
-          "description": "At least one of targetDedicatedNodes, targetLowPriorityNodes must be set."
+          "description": "At least one of targetDedicatedNodes, targetSpotNodes must be set."
         },
-        "targetLowPriorityNodes": {
+        "targetSpotNodes": {
           "type": "integer",
           "format": "int32",
-          "title": "The desired number of low priority compute nodes in the pool.",
-          "description": "At least one of targetDedicatedNodes, targetLowPriorityNodes must be set."
+          "title": "The desired number of spot compute nodes in the pool.",
+          "description": "At least one of targetDedicatedNodes, targetSpotNodes must be set."
         },
         "nodeDeallocationOption": {
           "title": "Determines what to do with a node and its running task(s) if the pool size is decreasing.",
@@ -3760,6 +4006,7 @@
       }
     },
     "CertificateReference": {
+      "type": "object",
       "properties": {
         "id": {
           "type": "string",
@@ -3831,6 +4078,7 @@
       "title": "A reference to a certificate to be installed on compute nodes in a pool. This must exist inside the same account as the pool."
     },
     "ApplicationPackageReference": {
+      "type": "object",
       "properties": {
         "id": {
           "type": "string",
@@ -3848,6 +4096,7 @@
       ]
     },
     "ResizeError": {
+      "type": "object",
       "properties": {
         "code": {
           "type": "string",
@@ -3872,6 +4121,7 @@
       ]
     },
     "AutoScaleRunError": {
+      "type": "object",
       "properties": {
         "code": {
           "type": "string",
@@ -3896,6 +4146,7 @@
       ]
     },
     "AutoScaleRun": {
+      "type": "object",
       "properties": {
         "evaluationTime": {
           "type": "string",
@@ -3918,6 +4169,7 @@
       "title": "The results and errors from an execution of a pool autoscale formula."
     },
     "VirtualMachineConfiguration": {
+      "type": "object",
       "properties": {
         "imageReference": {
           "$ref": "#/definitions/ImageReference",
@@ -3968,6 +4220,11 @@
           },
           "title": "The virtual machine extension for the pool.",
           "description": "If specified, the extensions mentioned in this configuration will be installed on each node."
+        },
+        "osDisk": {
+          "$ref": "#/definitions/OSDisk",
+          "title": "Settings for the operating system disk of the Virtual Machine.",
+          "description": "Contains configuration for ephemeral OSDisk settings."
         }
       },
       "required": [
@@ -3977,6 +4234,7 @@
       "title": "The configuration for compute nodes in a pool based on the Azure Virtual Machines infrastructure."
     },
     "ContainerRegistry": {
+      "type": "object",
       "properties": {
         "registryServer": {
           "type": "string",
@@ -4000,6 +4258,7 @@
       "title": "A private container registry."
     },
     "DiskEncryptionConfiguration": {
+      "type": "object",
       "properties": {
         "targets": {
           "type": "array",
@@ -4036,6 +4295,7 @@
       "description": "The disk encryption configuration applied on compute nodes in the pool. Disk encryption configuration is not supported on Linux pool created with Virtual Machine Image or Shared Image Gallery Image."
     },
     "ContainerConfiguration": {
+      "type": "object",
       "properties": {
         "type": {
           "type": "string",
@@ -4103,6 +4363,7 @@
     "NodePlacementConfiguration": {
       "title": "Node placement configuration for batch pools.",
       "description": "Allocation configuration used by Batch Service to provision the nodes.",
+      "type": "object",
       "properties": {
         "policy": {
           "$ref": "#/definitions/NodePlacementPolicyType",
@@ -4112,6 +4373,7 @@
       }
     },
     "VMExtension": {
+      "type": "object",
       "properties": {
         "name": {
           "type": "string",
@@ -4159,6 +4421,7 @@
       "title": "The configuration for virtual machine extensions."
     },
     "WindowsConfiguration": {
+      "type": "object",
       "properties": {
         "enableAutomaticUpdates": {
           "type": "boolean",
@@ -4169,6 +4432,7 @@
       "title": "Windows operating system settings to apply to the virtual machine."
     },
     "ImageReference": {
+      "type": "object",
       "properties": {
         "publisher": {
           "type": "string",
@@ -4199,6 +4463,7 @@
       "title": "A reference to an Azure Virtual Machines Marketplace image or the Azure Image resource of a custom Virtual Machine. To get the list of all imageReferences verified by Azure Batch, see the 'List supported node agent SKUs' operation."
     },
     "DataDisk": {
+      "type": "object",
       "properties": {
         "lun": {
           "type": "integer",
@@ -4229,6 +4494,7 @@
       "description": "Settings which will be used by the data disks associated to Compute Nodes in the Pool. When using attached data disks, you need to mount and format the disks from within a VM to use them."
     },
     "TaskSchedulingPolicy": {
+      "type": "object",
       "properties": {
         "nodeFillType": {
           "type": "string",
@@ -4259,6 +4525,7 @@
       "title": "Specifies how tasks should be distributed across compute nodes."
     },
     "LinuxUserConfiguration": {
+      "type": "object",
       "properties": {
         "uid": {
           "type": "integer",
@@ -4281,6 +4548,7 @@
       "title": "Properties used to create a user account on a Linux node."
     },
     "WindowsUserConfiguration": {
+      "type": "object",
       "properties": {
         "loginMode": {
           "type": "string",
@@ -4309,6 +4577,7 @@
       "title": "Properties used to create a user account on a Windows node."
     },
     "UserAccount": {
+      "type": "object",
       "properties": {
         "name": {
           "type": "string",
@@ -4341,6 +4610,7 @@
       "title": "Properties used to create a user on an Azure Batch node."
     },
     "StartTask": {
+      "type": "object",
       "properties": {
         "commandLine": {
           "type": "string",
@@ -4387,6 +4657,7 @@
       "description": "In some cases the start task may be re-run even though the node was not rebooted. Due to this, start tasks should be idempotent and exit gracefully if the setup they're performing has already been done. Special care should be taken to avoid start tasks which create breakaway process or install/launch services from the start task working directory, as this will block Batch from being able to re-run the start task."
     },
     "TaskContainerSettings": {
+      "type": "object",
       "properties": {
         "containerRunOptions": {
           "type": "string",
@@ -4432,6 +4703,7 @@
       "title": "The container settings for a task."
     },
     "ResourceFile": {
+      "type": "object",
       "properties": {
         "autoStorageContainerName": {
           "type": "string",
@@ -4467,6 +4739,7 @@
       "title": "A single file or multiple files to be downloaded to a compute node."
     },
     "EnvironmentSetting": {
+      "type": "object",
       "properties": {
         "name": {
           "type": "string",
@@ -4483,6 +4756,7 @@
       "title": "An environment variable to be set on a task process."
     },
     "UserIdentity": {
+      "type": "object",
       "properties": {
         "userName": {
           "type": "string",
@@ -4498,7 +4772,24 @@
       "title": "The definition of the user identity under which the task is run.",
       "description": "Specify either the userName or autoUser property, but not both."
     },
+    "UserAssignedIdentities": {
+      "type": "object",
+      "description": "The list of associated user identities.",
+      "properties": {
+        "principalId": {
+          "readOnly": true,
+          "type": "string",
+          "description": "The principal id of user assigned identity."
+        },
+        "clientId": {
+          "readOnly": true,
+          "type": "string",
+          "description": "The client id of user assigned identity."
+        }
+      }
+    },
     "AutoUserSpecification": {
+      "type": "object",
       "properties": {
         "scope": {
           "type": "string",
@@ -4602,6 +4893,46 @@
         ]
       }
     },
+    "DiffDiskPlacement": {
+      "type": "string",
+      "title": "Specifies the ephemeral disk placement for operating system disk for all VMs in the pool.",
+      "description": "This property can be used by user in the request to choose which location the operating system should be in. e.g., cache disk space for Ephemeral OS disk provisioning. For more information on Ephemeral OS disk size requirements, please refer to Ephemeral OS disk size requirements for Windows VMs at https://docs.microsoft.com/en-us/azure/virtual-machines/windows/ephemeral-os-disks#size-requirements and Linux VMs at https://docs.microsoft.com/en-us/azure/virtual-machines/linux/ephemeral-os-disks#size-requirements",
+      "enum": [
+        "CacheDisk"
+      ],
+      "x-ms-enum": {
+        "name": "DiffDiskPlacement",
+        "modelAsString": false,
+        "values": [
+          {
+            "value": "CacheDisk",
+            "description": "The Ephemeral OS Disk is stored on the VM cache.",
+            "name": "CacheDisk"
+          }
+        ]
+      }
+    },
+    "DiffDiskSettings": {
+      "type": "object",
+      "properties": {
+        "placement": {
+          "$ref": "#/definitions/DiffDiskPlacement",
+          "title": "Specifies the ephemeral disk placement for operating system disk for all VMs in the pool.",
+          "description": "This property can be used by user in the request to choose which location the operating system should be in. e.g., cache disk space for Ephemeral OS disk provisioning. For more information on Ephemeral OS disk size requirements, please refer to Ephemeral OS disk size requirements for Windows VMs at https://docs.microsoft.com/en-us/azure/virtual-machines/windows/ephemeral-os-disks#size-requirements and Linux VMs at https://docs.microsoft.com/en-us/azure/virtual-machines/linux/ephemeral-os-disks#size-requirements."
+        }
+      },
+      "title": "Specifies the ephemeral Disk Settings for the operating system disk used by the virtual machine."
+    },
+    "OSDisk": {
+      "type": "object",
+      "properties": {
+        "ephemeralOSDiskSettings": {
+          "$ref": "#/definitions/DiffDiskSettings",
+          "title": "Specifies the ephemeral Disk Settings for the operating system disk used by the virtual machine."
+        }
+      },
+      "title": "Settings for the operating system disk of the virtual machine."
+    },
     "IPAddressProvisioningType": {
       "type": "string",
       "title": "The provisioning type for Public IP Addresses for the Batch Pool.",
@@ -4630,6 +4961,7 @@
       }
     },
     "PublicIPAddressConfiguration": {
+      "type": "object",
       "properties": {
         "provision": {
           "$ref": "#/definitions/IPAddressProvisioningType",
@@ -4648,6 +4980,7 @@
       "description": "The public IP Address configuration of the networking configuration of a Pool."
     },
     "NetworkConfiguration": {
+      "type": "object",
       "properties": {
         "subnetId": {
           "type": "string",
@@ -4672,6 +5005,7 @@
       "description": "The network configuration for a pool."
     },
     "CloudServiceConfiguration": {
+      "type": "object",
       "properties": {
         "osFamily": {
           "type": "string",
@@ -4690,6 +5024,7 @@
       "title": "The configuration for nodes in a pool based on the Azure Cloud Services platform."
     },
     "MetadataItem": {
+      "type": "object",
       "properties": {
         "name": {
           "type": "string",
@@ -4708,16 +5043,17 @@
       "description": "The Batch service does not assign any meaning to this metadata; it is solely for the use of user code."
     },
     "ResizeOperationStatus": {
+      "type": "object",
       "properties": {
         "targetDedicatedNodes": {
           "type": "integer",
           "format": "int32",
           "title": "The desired number of dedicated compute nodes in the pool."
         },
-        "targetLowPriorityNodes": {
+        "targetSpotNodes": {
           "type": "integer",
           "format": "int32",
-          "title": "The desired number of low priority compute nodes in the pool."
+          "title": "The desired number of spot compute nodes in the pool."
         },
         "resizeTimeout": {
           "type": "string",
@@ -4748,6 +5084,7 @@
       "description": "Describes either the current operation (if the pool AllocationState is Resizing) or the previously completed operation (if the AllocationState is Steady)."
     },
     "PoolEndpointConfiguration": {
+      "type": "object",
       "properties": {
         "inboundNatPools": {
           "type": "array",
@@ -4764,6 +5101,7 @@
       "title": "The endpoint configuration for a pool."
     },
     "InboundNatPool": {
+      "type": "object",
       "properties": {
         "name": {
           "type": "string",
@@ -4829,6 +5167,7 @@
       "title": "A inbound NAT pool that can be used to address specific ports on compute nodes in a Batch pool externally."
     },
     "NetworkSecurityGroupRule": {
+      "type": "object",
       "properties": {
         "priority": {
           "type": "integer",
@@ -4880,6 +5219,7 @@
       "title": "A network security group rule to apply to an inbound endpoint."
     },
     "ListPrivateLinkResourcesResult": {
+      "type": "object",
       "properties": {
         "value": {
           "type": "array",
@@ -4896,6 +5236,7 @@
       "description": "Values returned by the List operation."
     },
     "ListPrivateEndpointConnectionsResult": {
+      "type": "object",
       "properties": {
         "value": {
           "type": "array",
@@ -4912,6 +5253,7 @@
       "description": "Values returned by the List operation."
     },
     "ListPoolsResult": {
+      "type": "object",
       "properties": {
         "value": {
           "type": "array",
@@ -4928,15 +5270,18 @@
       "description": "Values returned by the List operation."
     },
     "CloudError": {
+      "type": "object",
       "x-ms-external": true,
       "properties": {
         "error": {
+          "description": "The body of the error response.",
           "$ref": "#/definitions/CloudErrorBody"
         }
       },
       "description": "An error response from the Batch service."
     },
     "CloudErrorBody": {
+      "type": "object",
       "x-ms-external": true,
       "properties": {
         "code": {
@@ -4961,6 +5306,67 @@
       },
       "description": "An error response from the Batch service."
     },
+    "SkuCapability": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "readOnly": true,
+          "description": "The name of the feature."
+        },
+        "value": {
+          "type": "string",
+          "readOnly": true,
+          "description": "The value of the feature."
+        }
+      },
+      "description": "A SKU capability, such as the number of cores."
+    },
+    "SupportedSku": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "readOnly": true,
+          "type": "string",
+          "description": "The name of the SKU."
+        },
+        "familyName": {
+          "readOnly": true,
+          "type": "string",
+          "description": "The family name of the SKU."
+        },
+        "capabilities": {
+          "type": "array",
+          "readOnly": true,
+          "items": {
+            "$ref": "#/definitions/SkuCapability"
+          },
+          "description": "A collection of capabilities which this SKU supports."
+        }
+      },
+      "description": "Describes a Batch supported SKU."
+    },
+    "SupportedSkusResult": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SupportedSku"
+          },
+          "description": "The list of SKUs available for the Batch service in the location."
+        },
+        "nextLink": {
+          "readOnly": true,
+          "type": "string",
+          "description": "The URL to use for getting the next set of results."
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "description": "The Batch List supported SKUs operation response."
+    },
     "Operation": {
       "title": "A REST API operation",
       "type": "object",
@@ -4970,8 +5376,13 @@
           "description": "This is of the format {provider}/{resource}/{operation}",
           "type": "string"
         },
+        "isDataAction": {
+          "description": "Indicates whether the operation is a data action",
+          "type": "boolean"
+        },
         "display": {
           "title": "The object that describes the operation.",
+          "type": "object",
           "properties": {
             "provider": {
               "title": "Friendly name of the resource provider.",
@@ -5004,6 +5415,7 @@
     },
     "OperationListResult": {
       "title": "Result of the request to list REST API operations. It contains a list of operations and a URL nextLink to get the next set of results.",
+      "type": "object",
       "properties": {
         "value": {
           "type": "array",
@@ -5019,6 +5431,7 @@
       }
     },
     "CheckNameAvailabilityParameters": {
+      "type": "object",
       "properties": {
         "name": {
           "type": "string",
@@ -5050,6 +5463,7 @@
       "description": "Parameters for a check name availability request."
     },
     "CheckNameAvailabilityResult": {
+      "type": "object",
       "properties": {
         "nameAvailable": {
           "readOnly": true,
@@ -5088,6 +5502,7 @@
       "description": "The CheckNameAvailability operation response."
     },
     "MountConfiguration": {
+      "type": "object",
       "properties": {
         "azureBlobFileSystemConfiguration": {
           "$ref": "#/definitions/AzureBlobFileSystemConfiguration",
@@ -5113,6 +5528,7 @@
       "title": "The file system to mount on each node."
     },
     "AzureBlobFileSystemConfiguration": {
+      "type": "object",
       "properties": {
         "accountName": {
           "type": "string",
@@ -5151,6 +5567,7 @@
       "title": "Information used to connect to an Azure Storage Container using Blobfuse."
     },
     "NFSMountConfiguration": {
+      "type": "object",
       "properties": {
         "source": {
           "type": "string",
@@ -5174,6 +5591,7 @@
       "title": "Information used to connect to an NFS file system."
     },
     "CIFSMountConfiguration": {
+      "type": "object",
       "properties": {
         "username": {
           "type": "string",
@@ -5207,6 +5625,7 @@
       "title": "Information used to connect to a CIFS file system."
     },
     "AzureFileShareConfiguration": {
+      "type": "object",
       "properties": {
         "accountName": {
           "type": "string",
@@ -5239,6 +5658,79 @@
         "relativeMountPath"
       ],
       "title": "Information used to connect to an Azure Fileshare."
+    },
+    "OutboundEnvironmentEndpointCollection": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "array",
+          "readOnly": true,
+          "items": {
+            "$ref": "#/definitions/OutboundEnvironmentEndpoint"
+          },
+          "description": "The collection of outbound network dependency endpoints returned by the listing operation."
+        },
+        "nextLink": {
+          "type": "string",
+          "description": "The continuation token."
+        }
+      },
+      "description": "Values returned by the List operation."
+    },
+    "OutboundEnvironmentEndpoint": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "readOnly": true,
+          "description": "The type of service that the Batch service connects to."
+        },
+        "endpoints": {
+          "type": "array",
+          "readOnly": true,
+          "items": {
+            "$ref": "#/definitions/EndpointDependency"
+          },
+          "description": "The endpoints for this service to which the Batch service makes outbound calls."
+        }
+      },
+      "description": "A collection of related endpoints from the same service for which the Batch service requires outbound access."
+    },
+    "EndpointDependency": {
+      "type": "object",
+      "properties": {
+        "domainName": {
+          "type": "string",
+          "readOnly": true,
+          "description": "The domain name of the dependency. Domain names may be fully qualified or may contain a * wildcard."
+        },
+        "description": {
+          "type": "string",
+          "readOnly": true,
+          "description": "Human-readable supplemental information about the dependency and when it is applicable."
+        },
+        "endpointDetails": {
+          "type": "array",
+          "readOnly": true,
+          "items": {
+            "$ref": "#/definitions/EndpointDetail"
+          },
+          "description": "The list of connection details for this endpoint."
+        }
+      },
+      "description": "A domain name and connection details used to access a dependency."
+    },
+    "EndpointDetail": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "integer",
+          "format": "int32",
+          "readOnly": true,
+          "description": "The port an endpoint is connected to."
+        }
+      },
+      "description": "Details about the connection between the Batch service and the endpoint."
     }
   },
   "parameters": {
